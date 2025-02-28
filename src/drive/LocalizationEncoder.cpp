@@ -34,8 +34,16 @@ void LocalizationEncoder::updatePosition(const long encoderCounts[3])
     float deltaTheta = (rightDistance - leftDistance) / TRACK_WIDTH; // get angular change
 
     // Calculate the change in position
-    float deltaX = ((leftDistance + rightDistance) / 2) * cos(transform.theta) + backDistance * sin(transform.theta) - WHEEL_OFFSET_Y * deltaTheta * sin(transform.theta);
-    float deltaY = ((leftDistance + rightDistance) / 2) * sin(transform.theta) - backDistance * cos(transform.theta) + WHEEL_OFFSET_Y * deltaTheta * cos(transform.theta) + BACK_OFFSET_F * deltaTheta * cos(transform.theta);
+    // float deltaX = ((leftDistance + rightDistance) / 2) * cos(transform.theta) + backDistance * sin(transform.theta) - WHEEL_OFFSET_Y * deltaTheta * sin(transform.theta);
+    // float deltaY = ((leftDistance + rightDistance) / 2) * sin(transform.theta) - backDistance * cos(transform.theta) + WHEEL_OFFSET_Y * deltaTheta * cos(transform.theta) + BACK_OFFSET_F * deltaTheta * cos(transform.theta);
+
+    // The second term of deltaXRobotFrame is the comensation for what the back wheel will experience when the robot is rotating.
+    // This must also be accounted for in the kinematics, or else the motor will slip
+    float deltaYRobotFrame = (leftDistance + rightDistance) / 2;
+    float deltaXRobotFrame = ((leftDistance - rightDistance) * BACK_OFFSET_F / TRACK_WIDTH) + backDistance;
+
+    float deltaX = deltaXRobotFrame * cos(transform.theta) + deltaYRobotFrame * sin(transform.theta);
+    float deltaY = deltaXRobotFrame * sin(transform.theta) + deltaYRobotFrame * cos(transform.theta);
 
     // Update the robot's position
     Pose2D delta(deltaX, deltaY, deltaTheta);

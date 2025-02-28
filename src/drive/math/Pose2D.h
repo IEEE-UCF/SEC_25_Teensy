@@ -11,7 +11,9 @@ public:
     Pose2D(float x, float y, float theta, float xymag = 1);
 
     Pose2D &normalize(Print &output);
+    Pose2D &normalize();
     Pose2D &unnormalize(Print &output);
+    Pose2D &unnormalize();
     float magnitude();
     Pose2D &add(const Pose2D &pose);
     Pose2D &subtract(const Pose2D &pose);

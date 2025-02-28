@@ -3,6 +3,8 @@
 
 #include "SimpleRobotDrive.h"
 #include "MOTORCONFIG.h"
+#include <elapsedMillis.h>
+#include <Arduino.h>
 
 class VectorRobotDrive : public SimpleRobotDrive
 {
@@ -10,9 +12,10 @@ public:
     VectorRobotDrive(const MotorSetup motorSetups[], int numMotors);
     void Set(const Pose2D &speedPose);
     Pose2D GetVelocity();
+    Pose2D Constrain(const Pose2D &speedPose);
 
 private:
-    Pose2D speedPose;
+    Pose2D constrainedSpeedPose;
 };
 
 #endif

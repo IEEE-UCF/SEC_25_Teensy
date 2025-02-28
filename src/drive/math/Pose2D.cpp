@@ -27,6 +27,19 @@ Pose2D &Pose2D::normalize(Print &output)
     return *this;
 }
 
+Pose2D &Pose2D::normalize()
+{
+    if (!normalized)
+    {
+        xymag = sqrt(x * x + y * y);
+        x = x / xymag;
+        y = y / xymag;
+        theta = theta / (2 * PI);
+        normalized = true;
+    }
+    return *this;
+}
+
 Pose2D &Pose2D::unnormalize(Print &output)
 {
     if (normalized)
@@ -40,6 +53,19 @@ Pose2D &Pose2D::unnormalize(Print &output)
     else
     {
         Serial.println("Not already normalized!");
+    }
+    return *this;
+}
+
+Pose2D &Pose2D::unnormalize()
+{
+    if (normalized)
+    {
+        x *= xymag;
+        y *= xymag;
+        xymag = 1;
+        theta = theta * (2 * PI);
+        normalized = false;
     }
     return *this;
 }
