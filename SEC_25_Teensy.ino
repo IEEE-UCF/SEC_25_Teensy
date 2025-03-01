@@ -44,7 +44,7 @@ MotorSetup nonDriveMotors[NONDRIVEMOTOR_COUNT] = {
 // const int kLine[LINE_COUNT] = {33, 33, 33};
 
 // Other Output Pins
-const int kServo[SERVO_COUNT] = {0, 1, 2, 23, 22};
+int kServo[SERVO_COUNT] = {0, 1, 2, 23, 22};
 
 // Input Handlers
 // ButtonHandler buttons(kButton, BUTTON_COUNT);
@@ -164,7 +164,7 @@ void loop()
     }*/
 
     Serial.print("Robot velocity pose ");
-    Serial << robotDrive.constrainedSpeedPose;
+    Serial << robotDrive.lastVelocityPose;
     /*
     robotDrive.PrintInfo(Serial, false);
     robotDrive.PrintLocal(Serial);

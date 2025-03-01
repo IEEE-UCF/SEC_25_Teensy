@@ -69,7 +69,7 @@ Pose2D LocalizationEncoder::getPosition() const
 void LocalizationEncoder::setPosition(const Pose2D &transform)
 {
     this->transform = transform;
-    transform.fixTheta();
+    this->transform.fixTheta();
 }
 
 void LocalizationEncoder::PrintInfo(Print &output) const

@@ -10,9 +10,7 @@ public:
 
     Pose2D(float x, float y, float theta, float xymag = 1);
 
-    Pose2D &normalize(Print &output);
     Pose2D &normalize();
-    Pose2D &unnormalize(Print &output);
     Pose2D &unnormalize();
     float magnitude();
     Pose2D &add(const Pose2D &pose);
@@ -23,6 +21,7 @@ public:
     Pose2D &translate(float dx, float dy);
     Pose2D &rotate(float dtheta);
     Pose2D &fixTheta();
+    Pose2D get();
     virtual Pose2D &rotateVector(float angle);
 
     friend Print &operator<<(Print &output, const Pose2D &pose); // ChatGPT generated

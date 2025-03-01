@@ -7,40 +7,32 @@
 Pose2D::Pose2D(float x, float y, float theta, float xymag) : x(x), y(y), theta(theta), xymag(xymag), normalized(false) {}
 
 /**
- * Normalize magnitude of x and y to 1, and theta from -1 to 1
+ * Normalize magnitude of x and y to 1, and theta from -1 to 1. Stores magnitude in xymag
  *
  */
-Pose2D &Pose2D::normalize(Print &output)
-{
-    if (!normalized)
-    {
-        xymag = sqrt(x * x + y * y);
-        x = x / xymag;
-        y = y / xymag;
-        theta = theta / (2 * PI);
-        normalized = true;
-    }
-    else
-    {
-        Serial.println("Already normalized!");
-    }
-    return *this;
-}
 
 Pose2D &Pose2D::normalize()
 {
     if (!normalized)
     {
         xymag = sqrt(x * x + y * y);
-        x = x / xymag;
-        y = y / xymag;
+        if (xymag == 0)
+        {
+            x = 0;
+            y = 0;
+        }
+        else
+        {
+            x = x / xymag;
+            y = y / xymag;
+        }
         theta = theta / (2 * PI);
         normalized = true;
     }
     return *this;
 }
 
-Pose2D &Pose2D::unnormalize(Print &output)
+Pose2D &Pose2D::unnormalize()
 {
     if (normalized)
     {
@@ -57,19 +49,6 @@ Pose2D &Pose2D::unnormalize(Print &output)
     return *this;
 }
 
-Pose2D &Pose2D::unnormalize()
-{
-    if (normalized)
-    {
-        x *= xymag;
-        y *= xymag;
-        xymag = 1;
-        theta = theta * (2 * PI);
-        normalized = false;
-    }
-    return *this;
-}
-
 /**
  * Get magnitude of vector component
  */
@@ -78,7 +57,7 @@ float Pose2D::magnitude()
     return sqrt(x * x + y * y) * xymag;
 }
 /**
- * Adds a pose.
+ * Adds a pose. FixTheta must be manually called
  *
  * @param pose Pose2D to add.
  */
@@ -87,12 +66,11 @@ Pose2D &Pose2D::add(const Pose2D &pose)
     x += pose.x;
     y += pose.y;
     theta += pose.theta;
-    fixTheta();
     return *this; // Return a reference to the current object
 }
 
 /**
- * Subtracts a pose.
+ * Subtracts a pose. FixTheta must be manually called
  *
  * @param pose Pose2D to subtract.
  */
@@ -101,12 +79,11 @@ Pose2D &Pose2D::subtract(const Pose2D &pose)
     x -= pose.x;
     y -= pose.y;
     theta -= pose.theta;
-    fixTheta();
     return *this; // Return a reference to the current object
 }
 
 /**
- * Multiplies 2 poses element by element. Does not fix theta
+ * Multiplies 2 poses element by element. FixTheta must be maually called
  *
  * @param pose Pose2D to multiply element by element.
  */
@@ -119,7 +96,7 @@ Pose2D &Pose2D::multElement(const Pose2D &pose)
 }
 
 /**
- * Multiplies pose by a scalar. Does not fix theta
+ * Multiplies pose by a scalar. FixTheta must be manualley called
  *
  * @param pose Pose2D to multiply by scalar.
  */
@@ -156,7 +133,7 @@ Pose2D &Pose2D::translate(float dx, float dy)
 }
 
 /**
- * Add to theta
+ * Add to theta.
  *
  * @param dtheta Amount to change theta by.
  */

@@ -10,12 +10,10 @@ class VectorRobotDrive : public SimpleRobotDrive
 {
 public:
     VectorRobotDrive(const MotorSetup motorSetups[], int numMotors);
-    void Set(const Pose2D &speedPose);
+    void Set(const Pose2D &velocityPose);
     Pose2D GetVelocity();
-    Pose2D Constrain(const Pose2D &speedPose);
-
-private:
-    Pose2D constrainedSpeedPose;
+    Pose2D Constrain(const Pose2D &velocityPose);
+    Pose2D lastVelocityPose;
 };
 
 #endif
