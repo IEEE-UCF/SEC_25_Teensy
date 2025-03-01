@@ -48,6 +48,7 @@ void LocalizationEncoder::updatePosition(const long encoderCounts[3])
     // Update the robot's position
     Pose2D delta(deltaX, deltaY, deltaTheta);
     transform.add(delta);
+    transform.fixTheta();
 }
 
 /**
@@ -68,6 +69,7 @@ Pose2D LocalizationEncoder::getPosition() const
 void LocalizationEncoder::setPosition(const Pose2D &transform)
 {
     this->transform = transform;
+    transform.fixTheta();
 }
 
 void LocalizationEncoder::PrintInfo(Print &output) const

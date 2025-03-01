@@ -78,6 +78,7 @@ void SimpleRobotDrive::ReadAll()
 {
   ReadEnc();                        // Update encoder counts
   localization.updatePosition(enc); // Update localization using encoder counts
+  localization.transform.fixTheta();
 }
 
 long *SimpleRobotDrive::GetEnc()

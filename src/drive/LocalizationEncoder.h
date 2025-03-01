@@ -13,8 +13,6 @@ public:
     void setPosition(const Pose2D &transform);
     void PrintInfo(Print &output) const;
     friend Print &operator<<(Print &output, const LocalizationEncoder &transform);
-
-private:
     Pose2D transform;
 };
 

@@ -106,7 +106,7 @@ void DriveMotor::PrintInfo(Print &output, bool printConfig) const
   else
   {
     output.print(F("DriveMotor PWM Output: "));
-    output.print(pwmout);
+    output.print(map(pwmout, 0, 255, 255, 0));
     output.print(F(", CW Output: "));
     output.print(cwout ? F("True") : F("False"));
     output.print(F(", Encoder: "));
