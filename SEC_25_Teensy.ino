@@ -3,7 +3,7 @@
 #include "src/handler/GyroHandler.h"
 #include "src/handler/LineHandler.h"
 #include "src/handler/ButtonHandler.h"
-// #include "ServoHandler.h"
+#include "src/handler/ServoHandler.h"
 #include "src/handler/HallHandler.h"
 #include "src/handler/RCHandler.h"
 // #include "TOFHandler.h"
@@ -17,7 +17,7 @@
 // Constants
 #define DRIVEMOTOR_COUNT 3
 #define NONDRIVEMOTOR_COUNT 2
-// #define SERVO_COUNT 3
+#define SERVO_COUNT 5
 #define BUTTON_COUNT 2
 #define HALL_COUNT 2
 // #define TOF_COUNT 2
@@ -27,14 +27,14 @@
  *  kPWM, kCW, kENCA, kENCB, rev
  */
 MotorSetup driveMotors[DRIVEMOTOR_COUNT] = {
-    {9, 32, 7, 8, true},   // left
-    {11, 27, 5, 6, false}, // center
-    {10, 26, 3, 4, false}  // right
+    {10, 24, 3, 4, true},  // left
+    {12, 11, 5, 6, false}, // center
+    {25, 9, 7, 8, false}   // right
 };
 
 MotorSetup nonDriveMotors[NONDRIVEMOTOR_COUNT] = {
-    {29, 30, 31, 30, true}, // intake
-    {-1, -1, -1, -1, false} // empty placeholder
+    {28, 29, 30, 31, true}, // intake
+    {33, 32, -1, -1, false} // aoerwe
 };
 
 // Other Input Pins
@@ -44,7 +44,7 @@ MotorSetup nonDriveMotors[NONDRIVEMOTOR_COUNT] = {
 // const int kLine[LINE_COUNT] = {33, 33, 33};
 
 // Other Output Pins
-// const int kServo[SERVO_COUNT] = {33, 33, 33};
+const int kServo[SERVO_COUNT] = {0, 1, 2, 23, 22};
 
 // Input Handlers
 // ButtonHandler buttons(kButton, BUTTON_COUNT);
@@ -57,7 +57,7 @@ RCHandler rc;
 
 // Output Handlers
 VectorRobotDrive robotDrive(driveMotors, DRIVEMOTOR_COUNT);
-// ServoHandler servos(kServo, SERVO_COUNT);
+ServoHandler servos(kServo, SERVO_COUNT);
 DriveMotor intake(nonDriveMotors[0]);
 // DriveMotor sorterMotor(nkPWM[1], nkCW[1], -1, -1, nrev[1]);
 
@@ -71,7 +71,7 @@ void setup()
   // buttons.Setup();
   // halls.Setup();
   // tofs.Begin();
-  rc.Begin(Serial1);
+  rc.Begin(Serial8);
   gyro.Setup();
   // lines.Setup();
   // servos.Setup();
@@ -121,6 +121,7 @@ void loop()
     programState = 2; // Up, turn RC on
   }
 
+  Pose2D toWrite(0, 0, 0);
   // Main logic
   if (programState == 1)
   {
@@ -131,13 +132,12 @@ void loop()
   else if (programState == 2)
   {
     // Flysky inputs. Note that "?" is -255 and "?" is 255
-    float y = map((float)constrain(rc.Get(2), -255, 255), -255, 255, -1, 1);               // LPot Y
-    float x = map((float)constrain(rc.Get(3), -255, 255), -255, 255, -1, 1);               // LPot X
-    float theta = map((float)constrain(rc.Get(0), -255, 255), -255, 255, -2 * PI, 2 * PI); // RPot X
+    float x = map((float)constrain(rc.Get(0), -255, 255), -255, 255, -MAX_VELOCITY * 2, MAX_VELOCITY * 2);
+    float y = map((float)constrain(rc.Get(1), -255, 255), -255, 255, -MAX_VELOCITY * 2, MAX_VELOCITY * 2);
+    float theta = map((float)constrain(rc.Get(3), -255, 255), -255, 255, -MAX_ANGULAR_VELOCITY * 2, MAX_ANGULAR_VELOCITY * 2); // RPot X
     float angleOffset = -gyro.GetGyroData()[2];
-    Pose2D toWrite(x, y, theta);
-    toWrite.normalize(Serial);
-    Serial << toWrite;
+    toWrite = Pose2D(x, y, theta);
+    // Serial << toWrite;
     robotDrive.Set(toWrite) /*.rotateVector(angleOffset)*/;
     intake.Set(rc.Get(5));
   }
@@ -155,6 +155,16 @@ void loop()
     printTimer -= 100;
     // Print Info
     Serial << robotDrive << intake;
+
+    /*
+    for (int i = 0; i < 10; i++)
+    {
+      Serial.print("channel: ");
+      Serial.println(rc.Get(i));
+    }*/
+
+    Serial.print("Robot velocity pose ");
+    Serial << robotDrive.constrainedSpeedPose;
     /*
     robotDrive.PrintInfo(Serial, false);
     robotDrive.PrintLocal(Serial);
