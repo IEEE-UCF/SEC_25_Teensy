@@ -1,7 +1,7 @@
 #include "VectorRobotDrive.h"
 
 /**
- * Initializes a robot drive, where the drive is based on a NORMALIZED Pose2D Input
+ * Initializes a robot drive, where the drive is based on a vector Pose2D input
  */
 VectorRobotDrive::VectorRobotDrive(const MotorSetup motorSetups[], int numMotors)
     : SimpleRobotDrive(motorSetups, numMotors), lastVelocityPose(0, 0, 0)
@@ -9,7 +9,7 @@ VectorRobotDrive::VectorRobotDrive(const MotorSetup motorSetups[], int numMotors
 }
 
 /**
- * Set motor values based on velocities. Input should be normalized
+ * Set motor values based on velocities.
  *
  * @param velocityPose motor velocities in inches per second
  */
