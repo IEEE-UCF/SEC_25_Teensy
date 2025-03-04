@@ -2,17 +2,30 @@
 #define Pose2D_H
 
 #include <Arduino.h>
+#include <cmath>
 
-class Pose2D
-{
+class Pose2D {
 public:
-    float x, y, theta, xymag;
+    Pose2D(float x = 0, float y = 0, float theta = 0, float xymag = 1, bool debug = false);
 
-    Pose2D(float x, float y, float theta, float xymag = 1);
+    float getX() const { return x; }
+    float getY() const { return y; }
+    float getTheta() const { return theta; }
+    float getXyMag() const { return xymag; }
+
+    void setX(float val) { x = val; normalized = false; }
+    void setY(float val) { y = val; normalized = false; }
+    void setThetaRadians(float val) { theta = val; fixTheta(); }
+    void setThetaDegrees(float deg) { theta = radians(deg); fixTheta(); }
 
     Pose2D &normalize();
-    Pose2D &unnormalize();
-    float magnitude();
+    Pose2D &fixTheta();
+    Pose2D &fullNormalize();
+    Pose2D &unnormalize(bool scaleTheta = false);
+
+    Pose2D &rotateVector(float angle);
+    Pose2D &rotateVectorCached(float cosAngle, float sinAngle);
+
     Pose2D &add(const Pose2D &pose);
     Pose2D &subtract(const Pose2D &pose);
     Pose2D &multElement(const Pose2D &pose);
@@ -20,14 +33,13 @@ public:
     Pose2D &reset();
     Pose2D &translate(float dx, float dy);
     Pose2D &rotate(float dtheta);
-    Pose2D &fixTheta();
-    Pose2D get();
-    virtual Pose2D &rotateVector(float angle);
 
-    friend Print &operator<<(Print &output, const Pose2D &pose); // ChatGPT generated
-protected:
+    friend Print &operator<<(Print &output, const Pose2D &pose);
+
+private:
+    float x, y, theta;
+    float xymag;
     bool normalized;
-    void normalizeError();
+    bool debugMode;
 };
-
 #endif
