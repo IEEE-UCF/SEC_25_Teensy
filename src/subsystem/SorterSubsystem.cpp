@@ -45,7 +45,7 @@ void SortingSubsystem::Update()
         // No object detected
         transferMotor.Set(100);                       // run the transfer
         servos.WriteServoAngle(iServo, CENTER_ANGLE); // write center angle
-        int range = tofs.Get(iTOF);                   // get range reading from tof. Update not required as we call it in main
+        int range = tofs.GetIndex(iTOF);              // get range reading from tof. Update not required as we call it in main
         if (range < OBJECT_RANGE)
         {
             _state = 1; // if object is detcted, switch state

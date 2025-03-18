@@ -3,17 +3,19 @@
 
 #include <Wire.h>
 #include <BH1750.h>
+#include "i2cmux.h"
 
 class LightHandler
 {
 public:
-    LightHandler();
-    void Setup();
+    LightHandler(int cLight);
+    void Begin();
     void Update();
     void PrintInfo(Print &output, bool printConfig = false) const;
     float GetLightLevel() const;
 
 private:
+    int cLight;
     BH1750 lightMeter;
     float lightLevel;
 };

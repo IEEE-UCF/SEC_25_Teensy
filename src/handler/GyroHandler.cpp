@@ -5,7 +5,7 @@ GyroHandler::GyroHandler() : bno08x(Adafruit_BNO08x(-1)) {}
 /**
  * Setup function for the Gyro. Fails sometimes
  */
-void GyroHandler::Setup()
+void GyroHandler::Begin()
 {
     if (!bno08x.begin_I2C(0x4B))
     {

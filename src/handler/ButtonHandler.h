@@ -7,7 +7,7 @@ class ButtonHandler
 {
 public:
   ButtonHandler(int *kPins, int numPins);
-  void Setup();
+  void Begin();
   void Update();
   bool *buttonStates;
 

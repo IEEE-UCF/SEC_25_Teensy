@@ -1,13 +1,14 @@
 #include "LightHandler.h"
 
-LightHandler::LightHandler() : lightMeter(), lightLevel(0.0)
+LightHandler::LightHandler(int cLight) : cLight(cLight), lightMeter(), lightLevel(0.0)
 {
 }
 
-void LightHandler::Setup()
+void LightHandler::Begin()
 {
-    Wire.begin();
-    if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE))
+    i2cmux::tcaselect(cLight);
+
+    if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, 0x23, &Wire1))
     {
         Serial.println("Light sensor initialized");
     }
@@ -19,6 +20,7 @@ void LightHandler::Setup()
 
 void LightHandler::Update()
 {
+    i2cmux::tcaselect(cLight);
     lightLevel = lightMeter.readLightLevel();
 }
 

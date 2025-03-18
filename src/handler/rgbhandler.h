@@ -36,9 +36,9 @@ enum EffectType
 class RGBHandler
 {
 public:
-    RGBHandler();         // constructor
-    bool begin();         // initializes LED strip
-    void update();        // updates all active effects
+    RGBHandler(uint8_t kLED);
+    bool Begin();
+    void Update();
 
     // section-based LED control
     bool setSectionSolidColor(uint8_t section, uint8_t r, uint8_t g, uint8_t b); // sets a section to a solid color
@@ -49,7 +49,11 @@ public:
     bool processCommand(const String &command); // processes external command inputs
     void stopAllEffects(); // stops all active effects
 
+    void PrintInfo(Print &output, bool printConfig) const;
+    friend Print &operator<<(Print &output, const RGBHandler &handler);
+
 private:
+    uint8_t kLED;
     // storing effect states for each section
     struct SectionEffect
     {

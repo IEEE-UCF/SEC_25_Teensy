@@ -3,26 +3,29 @@
 // initializing static member for tracking previous streak positions
 int RGBHandler::prev_positions[NUM_SECTIONS];
 
-RGBHandler::RGBHandler() : 
-    leds(TOTAL_LEDS, displayMemory, drawingMemory, LED_PIN, WS2812_GRB) 
+RGBHandler::RGBHandler(uint8_t kLED) : kLED(kLED), leds(TOTAL_LEDS, displayMemory, drawingMemory, kLED, WS2812_GRB)
 {
     // setting all previous positions to -1 (no active streaks)
-    for (int i = 0; i < NUM_SECTIONS; i++) {
+    for (int i = 0; i < NUM_SECTIONS; i++)
+    {
         prev_positions[i] = -1;
     }
 }
 
-bool RGBHandler::begin() {
+bool RGBHandler::Begin()
+{
     static bool serialInitialized = false;
-    if (!serialInitialized) {
-        Serial.begin(115200);
+    if (!serialInitialized)
+    {
+        Serial3.begin(115200);
         serialInitialized = true;
     }
 
     // computing section start indices
     sectionStarts[0] = 0;
-    for (int i = 1; i < NUM_SECTIONS; i++) {
-        sectionStarts[i] = sectionStarts[i-1] + SECTION_SIZES[i-1];
+    for (int i = 1; i < NUM_SECTIONS; i++)
+    {
+        sectionStarts[i] = sectionStarts[i - 1] + SECTION_SIZES[i - 1];
     }
 
     leds.begin();
@@ -32,14 +35,17 @@ bool RGBHandler::begin() {
 
 // brightness scaling with rounding correction
 void RGBHandler::applyBrightness(uint8_t r, uint8_t g, uint8_t b,
-                                uint8_t &r_out, uint8_t &g_out, uint8_t &b_out) {
+                                 uint8_t &r_out, uint8_t &g_out, uint8_t &b_out)
+{
     r_out = constrain(((uint32_t)r * globalBrightness + 127) / 255, 0U, 255U);
     g_out = constrain(((uint32_t)g * globalBrightness + 127) / 255, 0U, 255U);
     b_out = constrain(((uint32_t)b * globalBrightness + 127) / 255, 0U, 255U);
 }
 
-bool RGBHandler::setSectionSolidColor(uint8_t section, uint8_t r, uint8_t g, uint8_t b) {
-    if (section >= NUM_SECTIONS) return false;
+bool RGBHandler::setSectionSolidColor(uint8_t section, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (section >= NUM_SECTIONS)
+        return false;
     stopSectionEffect(section);
 
     uint8_t r_adj, g_adj, b_adj;
@@ -47,7 +53,8 @@ bool RGBHandler::setSectionSolidColor(uint8_t section, uint8_t r, uint8_t g, uin
 
     uint16_t start = sectionStarts[section];
     uint16_t end = start + SECTION_SIZES[section];
-    for (uint16_t i = start; i < end; i++) {
+    for (uint16_t i = start; i < end; i++)
+    {
         leds.setPixel(i, r_adj, g_adj, b_adj);
     }
     leds.show();
@@ -55,9 +62,11 @@ bool RGBHandler::setSectionSolidColor(uint8_t section, uint8_t r, uint8_t g, uin
 }
 
 // setting up pulse effect with smooth transition control
-bool RGBHandler::setSectionPulseEffect(uint8_t section, uint8_t r, uint8_t g, uint8_t b, unsigned long speed) {
-    if (section >= NUM_SECTIONS || speed < MIN_SPEED || speed > MAX_SPEED) return false;
-    
+bool RGBHandler::setSectionPulseEffect(uint8_t section, uint8_t r, uint8_t g, uint8_t b, unsigned long speed)
+{
+    if (section >= NUM_SECTIONS || speed < MIN_SPEED || speed > MAX_SPEED)
+        return false;
+
     SectionEffect &sec = sections[section];
     sec.currentEffect = PULSE;
     sec.effectSpeed = speed;
@@ -146,29 +155,32 @@ void RGBHandler::stopSectionEffect(uint8_t section) {
 }
 
 // updating streak effect efficiently
-void RGBHandler::updateStreak(uint8_t section) {
+void RGBHandler::updateStreak(uint8_t section)
+{
     SectionEffect &sec = sections[section];
     uint16_t size = SECTION_SIZES[section];
     uint16_t start = sectionStarts[section];
     int current_pos = sec.streak_position;
 
     // clears previous streak if it has moved
-    if (prev_positions[section] != -1 && 
+    if (prev_positions[section] != -1 &&
         prev_positions[section] != current_pos &&
-        prev_positions[section] < size) {
+        prev_positions[section] < size)
+    {
         leds.setPixel(start + prev_positions[section], 0, 0, 0);
     }
 
     // drawing new streak
-    for (uint8_t i = 0; i < sec.streak_trailLength; i++) {
+    for (uint8_t i = 0; i < sec.streak_trailLength; i++)
+    {
         int pos = (current_pos - i + size) % size;
-        if (pos >= size) continue;
+        if (pos >= size)
+            continue;
         uint16_t led = start + pos;
         leds.setPixel(led,
-            (sec.streak_r * 200) >> 8,
-            (sec.streak_g * 200) >> 8,
-            (sec.streak_b * 200) >> 8
-        );
+                      (sec.streak_r * 200) >> 8,
+                      (sec.streak_g * 200) >> 8,
+                      (sec.streak_b * 200) >> 8);
     }
 
     // tracks position updates
@@ -177,38 +189,108 @@ void RGBHandler::updateStreak(uint8_t section) {
 }
 
 // manages effect updates while avoiding redundant refreshes
-void RGBHandler::update() {
+void RGBHandler::Update()
+{
     static unsigned long lastShow = 0;
     bool updated = false;
     unsigned long now = millis();
 
-    for (uint8_t s = 0; s < NUM_SECTIONS; s++) {
+    for (uint8_t s = 0; s < NUM_SECTIONS; s++)
+    {
         SectionEffect &sec = sections[s];
-        if (sec.currentEffect == NONE) continue;
+        if (sec.currentEffect == NONE)
+            continue;
 
-        if (now - sec.lastUpdate >= sec.effectSpeed) {
-            if (sec.currentEffect == PULSE) updatePulse(s);
-            if (sec.currentEffect == STREAK) updateStreak(s);
+        if (now - sec.lastUpdate >= sec.effectSpeed)
+        {
+            if (sec.currentEffect == PULSE)
+                updatePulse(s);
+            if (sec.currentEffect == STREAK)
+                updateStreak(s);
             updated = true;
             sec.lastUpdate = now;
         }
     }
 
     // refreshes the led strip at most 60 times per second
-    if (updated && (now - lastShow >= 16)) {
+    if (updated && (now - lastShow >= 16))
+    {
         leds.show();
         lastShow = now;
     }
 }
 
 // stops all effects at once
-void RGBHandler::stopAllEffects() {
-    for (uint8_t s = 0; s < NUM_SECTIONS; s++) stopSectionEffect(s);
+void RGBHandler::stopAllEffects()
+{
+    for (uint8_t s = 0; s < NUM_SECTIONS; s++)
+        stopSectionEffect(s);
     leds.show();
 }
 
-bool RGBHandler::setGlobalBrightness(uint8_t brightness) {
+bool RGBHandler::setGlobalBrightness(uint8_t brightness)
+{
     globalBrightness = constrain(brightness, 0, MAX_BRIGHTNESS);
     leds.setBrightness(globalBrightness);
     return true;
+}
+
+void RGBHandler::PrintInfo(Print &output, bool printConfig) const
+{
+    if (printConfig)
+    {
+        output.print(F("RGBHandler Configuration: "));
+        output.print(F("Number of Sections: "));
+        output.println(NUM_SECTIONS);
+        output.print(F("Section Sizes: "));
+        for (int i = 0; i < NUM_SECTIONS; i++)
+        {
+            output.print(SECTION_SIZES[i]);
+            if (i < NUM_SECTIONS - 1)
+            {
+                output.print(F(", "));
+            }
+        }
+        output.println();
+        output.print(F("Global Brightness: "));
+        output.println(globalBrightness);
+    }
+    else
+    {
+        output.print(F("Section States: "));
+        for (int i = 0; i < NUM_SECTIONS; i++)
+        {
+            output.print(F("Section "));
+            output.print(i);
+            output.print(F(": "));
+            output.print(F("Effect: "));
+            output.print(sections[i].currentEffect);
+            output.print(F(", Last Update: "));
+            output.print(sections[i].lastUpdate);
+            output.print(F(", Effect Speed: "));
+            output.print(sections[i].effectSpeed);
+            output.print(F(", Pulse RGB: ("));
+            output.print(sections[i].pulse_r);
+            output.print(F(", "));
+            output.print(sections[i].pulse_g);
+            output.print(F(", "));
+            output.print(sections[i].pulse_b);
+            output.print(F("), Streak RGB: ("));
+            output.print(sections[i].streak_r);
+            output.print(F(", "));
+            output.print(sections[i].streak_g);
+            output.print(F(", "));
+            output.print(sections[i].streak_b);
+            output.print(F("), Streak Position: "));
+            output.print(sections[i].streak_position);
+            output.print(F(", Streak Trail Length: "));
+            output.println(sections[i].streak_trailLength);
+        }
+    }
+}
+
+Print &operator<<(Print &output, const RGBHandler &handler)
+{
+    handler.PrintInfo(output, false);
+    return output;
 }

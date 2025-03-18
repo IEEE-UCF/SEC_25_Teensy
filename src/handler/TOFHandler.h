@@ -5,21 +5,23 @@
 #include <Print.h>
 #include <Wire.h>
 #include <VL53L0X.h>
+#include "i2cmux.h"
 
 class TOFHandler
 {
 public:
-    TOFHandler(int *kPins, int numPins);
+    TOFHandler(int *cToFs, int numChannels);
     ~TOFHandler();
     void Begin();
     void Update();
-    int Get(int index) const;
+    const int *Get() const;
+    int GetIndex(int index) const;
     void PrintInfo(Print &output, bool printConfig) const;
     friend Print &operator<<(Print &output, const TOFHandler &handler);
 
 private:
-    int *kPins;
-    int numPins;
+    int *cToFs;
+    int numChannels;
     VL53L0X *sensors;
     int *distances;
 };

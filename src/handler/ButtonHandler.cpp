@@ -8,7 +8,7 @@ ButtonHandler::ButtonHandler(int *kPins, int numPins)
   buttonStates = new bool[numPins];
 }
 
-void ButtonHandler::Setup()
+void ButtonHandler::Begin()
 {
   for (int i = 0; i < numPins; i++)
   {

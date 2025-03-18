@@ -1,11 +1,11 @@
 #include "TOFHandler.h"
 
-TOFHandler::TOFHandler(int *kPins, int numPins)
+TOFHandler::TOFHandler(int *cToFs, int numChannels)
 {
-  this->kPins = kPins;
-  this->numPins = numPins;
-  sensors = new VL53L0X[numPins];
-  distances = new int[numPins];
+  this->cToFs = cToFs;
+  this->numChannels = numChannels;
+  sensors = new VL53L0X[numChannels];
+  distances = new int[numChannels];
 }
 
 TOFHandler::~TOFHandler()
@@ -16,42 +16,45 @@ TOFHandler::~TOFHandler()
 
 void TOFHandler::Begin()
 {
-  for (int i = 0; i < numPins; i++)
+  for (int i = 0; i < numChannels; i++)
   {
-    pinMode(kPins[i], OUTPUT);
-    digitalWrite(kPins[i], LOW);
-  }
-  delay(10);
-  for (int i = 0; i < numPins; i++)
-  {
-    digitalWrite(kPins[i], HIGH);
-    delay(10);
-    sensors[i].setTimeout(500);
+    i2cmux::tcaselect(cToFs[i]);
+    sensors[i].setBus(&Wire1);
+    // sensors[i].setTimeout(500);
     if (!sensors[i].init())
     {
-      Serial.print(F("Failed to detect and initialize sensor at pin "));
-      Serial.println(kPins[i]);
+      Serial.print(F("Failed to detect and initialize sensor at channel "));
+      Serial.println(cToFs[i]);
     }
+    sensors[i].setSignalRateLimit(0.10);
+    sensors[i].setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+    sensors[i].setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
     sensors[i].startContinuous();
   }
 }
 
 void TOFHandler::Update()
 {
-  for (int i = 0; i < numPins; i++)
+  for (int i = 0; i < numChannels; i++)
   {
+    i2cmux::tcaselect(cToFs[i]);
     distances[i] = sensors[i].readRangeContinuousMillimeters();
     if (sensors[i].timeoutOccurred())
     {
-      Serial.print(F("Timeout occurred at pin "));
-      Serial.println(kPins[i]);
+      Serial.print(F("Timeout occurred at channel "));
+      Serial.println(cToFs[i]);
     }
   }
 }
 
-int TOFHandler::Get(int index) const
+const int *TOFHandler::Get() const
 {
-  if (index >= 0 && index < numPins)
+  return distances;
+}
+
+int TOFHandler::GetIndex(int index) const
+{
+  if (index >= 0 && index < numChannels)
   {
     return distances[index];
   }
@@ -63,13 +66,13 @@ void TOFHandler::PrintInfo(Print &output, bool printConfig) const
   if (printConfig)
   {
     output.print(F("TOFHandler Configuration: "));
-    output.print(F("Number of Pins: "));
-    output.println(numPins);
-    output.print(F("Pins: "));
-    for (int i = 0; i < numPins; i++)
+    output.print(F("Number of Channels: "));
+    output.println(numChannels);
+    output.print(F("Channels: "));
+    for (int i = 0; i < numChannels; i++)
     {
-      output.print(kPins[i]);
-      if (i < numPins - 1)
+      output.print(cToFs[i]);
+      if (i < numChannels - 1)
       {
         output.print(F(", "));
       }
@@ -79,10 +82,10 @@ void TOFHandler::PrintInfo(Print &output, bool printConfig) const
   else
   {
     output.print(F("Distances: "));
-    for (int i = 0; i < numPins; i++)
+    for (int i = 0; i < numChannels; i++)
     {
       output.print(distances[i]);
-      if (i < numPins - 1)
+      if (i < numChannels - 1)
       {
         output.print(F(", "));
       }

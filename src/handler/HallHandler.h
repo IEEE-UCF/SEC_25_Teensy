@@ -11,7 +11,7 @@ public:
 
     int *getReadings() const { return analogValues; }
     ~HallHandler();
-    void Setup();
+    void Begin();
     void Update();
     void PrintInfo(Print &output, bool printConfig) const;
     friend Print &operator<<(Print &output, const HallHandler &handler);

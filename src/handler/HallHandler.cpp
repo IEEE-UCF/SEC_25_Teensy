@@ -13,8 +13,10 @@ HallHandler::~HallHandler()
     delete[] analogValues;
 }
 
-void HallHandler::Setup()
+void HallHandler::Begin()
 {
+    analogReadResolution(8);
+    analogReadAveraging(32);
     for (int i = 0; i < numPins; i++)
     {
         pinMode(kPins[i], INPUT);
