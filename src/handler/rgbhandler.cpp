@@ -74,10 +74,31 @@ bool RGBHandler::setSectionPulseEffect(uint8_t section, uint8_t r, uint8_t g, ui
     return true;
 }
 
+// setting up streak effect
+bool RGBHandler::setSectionStreakEffect(uint8_t section, uint8_t r, uint8_t g, uint8_t b, unsigned long speed) {
+    if (section >= NUM_SECTIONS || speed < MIN_SPEED || speed > MAX_SPEED) return false;
+    
+    SectionEffect &sec = sections[section];
+    sec.currentEffect = STREAK;
+    sec.effectSpeed = speed;
+    sec.streak_r = r;
+    sec.streak_g = g;
+    sec.streak_b = b;
+    
+    // initialize streak position and trail
+    sec.streak_position = 0;
+    sec.streak_trailLength = 2;  // default trail length
+    
+    // reset previous position tracking
+    prev_positions[section] = -1;
+    
+    return true;
+}
+
 // updating pulse effect
 void RGBHandler::updatePulse(uint8_t section) {
     SectionEffect &sec = sections[section];
-    // Update phase and wrap around at 1024
+    // update phase and wrap around at 1024
     sec.pulse_phase += sec.pulse_step;
     sec.pulse_phase %= 1024;
 
